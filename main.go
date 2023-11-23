@@ -9,15 +9,16 @@ import (
 	"sync"
 )
 
-var keywords = []string{"teste", "golang", "typescript"}
+var keywords = []string{"Teste", "golang", "typescript", "RaMiro"}
 
-func containsKeyword(line string, keywords []string) bool {
+func containsAllKeywords(line string, keywords []string) bool {
+	keywordFound := make(map[string]bool, len(keywords))
 	for _, keyword := range keywords {
-		if strings.Contains(line, keyword) {
-			return true
+		if strings.Contains(line, strings.ToUpper(keyword)) {
+			keywordFound[keyword] = true
 		}
 	}
-	return false
+	return len(keywordFound) == len(keywords)
 }
 
 func createDirIfNotExist(dir string) error {
@@ -42,7 +43,7 @@ func processFile(filePath string, results chan<- string) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if containsKeyword(scanner.Text(), keywords) {
+		if containsAllKeywords(strings.ToUpper(scanner.Text()), keywords) {
 			results <- filePath
 			return
 		}
