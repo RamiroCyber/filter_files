@@ -1,17 +1,11 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"mime/multipart"
-	"os"
-	"read_files/pkg/filemenager"
+	"read_files/models"
 	"read_files/pkg/fileprocessor"
-	"read_files/util/constants"
-	"sync"
+	"read_files/util"
 )
-
-var keywords = []string{"Teste", "golang"}
 
 func SendFiles(c *fiber.Ctx) error {
 	form, err := c.MultipartForm()
@@ -19,42 +13,30 @@ func SendFiles(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Erro ao processar formulário"})
 	}
 
-	files := form.File["documents"]
-
-	var wg sync.WaitGroup
-	results := make(chan string, len(files))
-
-	if err := filemenager.CreateDirIfNotExist(constants.TempDirPath); err != nil {
-		fmt.Println("Erro ao criar o diretório:", err)
-		return err
+	request := models.RequestForm{
+		Files:    form.File["documents"],
+		Keywords: util.SeparateWords(form.Value["keywords"]),
 	}
 
-	for _, fileHeader := range files {
-		wg.Add(1)
-		go func(fh *multipart.FileHeader) {
-			defer wg.Done()
-			tempFilePath := constants.TempDirPath + fh.Filename
-			if err := c.SaveFile(fh, tempFilePath); err != nil {
-				fmt.Println("Erro ao salvar o arquivo:", err)
-				return
-			}
-			fileprocessor.ProcessFile(tempFilePath, keywords, results)
-
-			if err := os.Remove(tempFilePath); err != nil {
-				fmt.Println("Erro ao excluir o arquivo temporário:", err)
-			}
-		}(fileHeader)
+	if len(request.Files) == 0 {
+		return c.Status(fiber.StatusBadRequest).SendString("Envie os arquivos para analise")
+	}
+	if len(request.Keywords) == 0 {
+		return c.Status(fiber.StatusBadRequest).SendString("Envie as palavras chave")
 	}
 
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
-
-	var matchedFiles []string
-	for filename := range results {
-		matchedFiles = append(matchedFiles, filename)
+	matchedFiles, err := fileprocessor.ProcessorFile(request)
+	if err != nil {
+		// Trate o erro
 	}
 
-	return c.JSON(matchedFiles)
+	zipFiles, err := fileprocessor.CreateAndSendZipFile(matchedFiles)
+	if err != nil {
+		// Trate o erro
+	}
+
+	c.Set("Content-Type", "application/zip")
+	c.Set("Content-Disposition", "attachment; filename=matched_files.zip")
+	return c.SendFile(zipFiles)
+
 }

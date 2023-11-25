@@ -1,15 +1,7 @@
 package constants
 
 const TempDirPath = "temp"
-
-// LinuxCommands
-const (
-	Ls   = "ls"
-	Echo = "echo"
-	Grep = "grep"
-	Cat  = "cat"
-	Mv   = "mv"
-)
+const ZipFileName = "matched_files.zip"
 
 const (
 	V1      = "v1"
