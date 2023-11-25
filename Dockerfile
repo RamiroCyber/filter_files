@@ -19,6 +19,8 @@ WORKDIR /root/
 
 COPY --from=builder /app/myapp .
 
+VOLUME /path/to/volume
+
 EXPOSE 3000
 
 CMD ["./myapp"]

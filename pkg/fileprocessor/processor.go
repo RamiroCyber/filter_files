@@ -47,10 +47,11 @@ func ProcessorFile(request models.RequestForm) ([]models.FileReader, error) {
 
 func CreateZipFile(matchedFiles []models.FileReader) (string, error) {
 	zipFilePath := filemenager.GenerateTempFilePath(constants.ZipFileName)
+	filemenager.CreateDirIfNotExist()
 	zipFile, err := os.Create(zipFilePath)
 
 	if err != nil {
-		util.CustomLogger(constants.Error, fmt.Sprintf("Create: %v", err))
+		util.CustomLogger(constants.Error, fmt.Sprintf("Create %s : %v", zipFilePath, err))
 		return "", err
 	}
 	defer zipFile.Close()
@@ -69,7 +70,7 @@ func CreateZipFile(matchedFiles []models.FileReader) (string, error) {
 
 		zipEntry, err := zipWriter.Create(nr.Filename)
 		if err != nil {
-			util.CustomLogger(constants.Error, fmt.Sprintf("Create: %v", err))
+			util.CustomLogger(constants.Error, fmt.Sprintf("Create zipWriter: %v", err))
 			return "", err
 		}
 
