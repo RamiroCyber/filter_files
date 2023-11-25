@@ -2,7 +2,7 @@ package filemenager
 
 import (
 	"os"
-	"read_files/config"
+	"read_files/util/constants"
 )
 
 func CreateDirIfNotExist() error {

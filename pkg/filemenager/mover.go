@@ -2,7 +2,7 @@ package filemenager
 
 import (
 	"os/exec"
-	"read_files/config"
+	"read_files/util/constants"
 )
 
 func MoveFile(destination string) error {
