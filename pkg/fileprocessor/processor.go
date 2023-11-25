@@ -65,7 +65,7 @@ func ProcessorFile(request models.RequestForm) ([]models.FileReader, error) {
 	return matchedFiles, nil
 }
 
-func CreateAndSendZipFile(matchedFiles []models.FileReader) (string, error) {
+func CreateZipFile(matchedFiles []models.FileReader) (string, error) {
 	zipFilePath := filemenager.GenerateTempFilePath(constants.ZipFileName)
 	zipFile, err := os.Create(zipFilePath)
 
