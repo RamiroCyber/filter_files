@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"path/filepath"
 	"read_files/models"
+	"read_files/pkg/filemenager"
 	"read_files/pkg/fileprocessor"
 	"read_files/util"
 	"read_files/util/constants"
@@ -20,6 +21,13 @@ func SendFiles(c *fiber.Ctx) error {
 		Keywords: util.SeparateWords(form.Value["keywords"]),
 	}
 
+	if len(request.Files) == 0 {
+		return c.Status(fiber.StatusBadRequest).SendString("Envie os arquivos para analise")
+	}
+	if len(request.Keywords) == 0 {
+		return c.Status(fiber.StatusBadRequest).SendString("Envie as palavras chave")
+	}
+
 	for _, fileHeader := range request.Files {
 		filename := fileHeader.Filename
 		extension := filepath.Ext(filename)
@@ -27,13 +35,6 @@ func SendFiles(c *fiber.Ctx) error {
 		if extension != constants.ExtensionTxt && extension != constants.ExtensionPdf {
 			return c.Status(fiber.StatusBadRequest).SendString("Extensão de arquivo não permitida")
 		}
-	}
-
-	if len(request.Files) == 0 {
-		return c.Status(fiber.StatusBadRequest).SendString("Envie os arquivos para analise")
-	}
-	if len(request.Keywords) == 0 {
-		return c.Status(fiber.StatusBadRequest).SendString("Envie as palavras chave")
 	}
 
 	matchedFiles, err := fileprocessor.ProcessorFile(request)
@@ -47,6 +48,7 @@ func SendFiles(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("Erro ao criar arquivo zip")
 
 	}
+	defer filemenager.RemoveFiles(zipFiles)
 
 	return c.SendFile(zipFiles)
 
