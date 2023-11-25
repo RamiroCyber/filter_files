@@ -2,7 +2,6 @@ package fileprocessor
 
 import (
 	"archive/zip"
-	"bufio"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -10,28 +9,8 @@ import (
 	"read_files/models"
 	"read_files/pkg/filemenager"
 	"read_files/util/constants"
-	"strings"
 	"sync"
 )
-
-func searchKeywordsInFiles(file multipart.File, filename string, keywords []string, results chan<- models.FileReader) {
-	scanner := bufio.NewScanner(file)
-	var contentBuilder strings.Builder
-
-	for scanner.Scan() {
-		contentBuilder.WriteString(strings.ToUpper(scanner.Text()))
-		contentBuilder.WriteString(" ")
-	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Erro ao ler o arquivo:", err)
-		return
-	}
-
-	if containsAllKeywords(contentBuilder.String(), keywords) {
-		results <- models.FileReader{Filename: filename, Reader: file}
-	}
-}
 
 func ProcessorFile(request models.RequestForm) ([]models.FileReader, error) {
 	var wg sync.WaitGroup
