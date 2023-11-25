@@ -1,6 +1,6 @@
-LABEL authors="Ramiro"
-
 FROM golang:1.21 as builder
+
+LABEL authors="Ramiro"
 
 WORKDIR /app
 

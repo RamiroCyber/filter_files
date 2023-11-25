@@ -8,6 +8,7 @@ import (
 	"os"
 	"read_files/models"
 	"read_files/pkg/filemenager"
+	"read_files/util"
 	"read_files/util/constants"
 	"sync"
 )
@@ -49,6 +50,7 @@ func CreateZipFile(matchedFiles []models.FileReader) (string, error) {
 	zipFile, err := os.Create(zipFilePath)
 
 	if err != nil {
+		util.CustomLogger(constants.Error, fmt.Sprintf("Create: %v", err))
 		return "", err
 	}
 	defer zipFile.Close()
@@ -60,22 +62,26 @@ func CreateZipFile(matchedFiles []models.FileReader) (string, error) {
 		if seeker, ok := nr.Reader.(io.Seeker); ok {
 			_, err := seeker.Seek(0, io.SeekStart)
 			if err != nil {
+				util.CustomLogger(constants.Error, fmt.Sprintf("Seek: %v", err))
 				return "", err
 			}
 		}
 
 		zipEntry, err := zipWriter.Create(nr.Filename)
 		if err != nil {
+			util.CustomLogger(constants.Error, fmt.Sprintf("Create: %v", err))
 			return "", err
 		}
 
 		_, err = io.Copy(zipEntry, nr.Reader)
 		if err != nil {
+			util.CustomLogger(constants.Error, fmt.Sprintf("Copy: %v", err))
 			return "", err
 		}
 	}
 
 	if err := zipWriter.Close(); err != nil {
+		util.CustomLogger(constants.Error, fmt.Sprintf("Close: %v", err))
 		return "", err
 	}
 
