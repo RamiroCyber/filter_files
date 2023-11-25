@@ -6,6 +6,6 @@ import (
 )
 
 func MoveFile(destination string) error {
-	cmd := exec.Command(constants.Mv, destination, constants.TargetDir)
+	cmd := exec.Command(constants.Mv, destination, constants.TempDirPath)
 	return cmd.Run()
 }

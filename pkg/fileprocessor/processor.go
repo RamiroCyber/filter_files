@@ -15,15 +15,19 @@ func ProcessFile(filePath string, keywords []string, results chan<- string) {
 	}
 	defer file.Close()
 
+	var contentBuilder strings.Builder
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if containsAllKeywords(strings.ToUpper(scanner.Text()), keywords) {
-			results <- filePath
-			return
-		}
+		contentBuilder.WriteString(strings.ToUpper(scanner.Text()))
+		contentBuilder.WriteString(" ")
 	}
 
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Erro ao ler o arquivo:", err)
+		return
+	}
+
+	if containsAllKeywords(contentBuilder.String(), keywords) {
+		results <- filePath
 	}
 }

@@ -1,6 +1,6 @@
 package constants
 
-const TargetDir = "approved"
+const TempDirPath = "temp"
 
 // LinuxCommands
 const (
