@@ -8,14 +8,15 @@ import (
 	"os"
 	"read_files/models"
 	"read_files/pkg/filemenager"
-	"read_files/util"
 	"read_files/util/constants"
 	"sync"
 )
 
 func ProcessorFile(request models.RequestForm) ([]models.FileReader, error) {
 	var wg sync.WaitGroup
+
 	results := make(chan models.FileReader, len(request.Files))
+	errChan := make(chan error, len(request.Files))
 
 	var matchedFiles []models.FileReader
 
@@ -25,19 +26,26 @@ func ProcessorFile(request models.RequestForm) ([]models.FileReader, error) {
 			defer wg.Done()
 			file, err := fh.Open()
 			if err != nil {
-				fmt.Println("Erro ao abrir o arquivo:", err)
+				errChan <- fmt.Errorf("erro ao abrir o arquivo: %v", err)
 				return
 			}
 			defer file.Close()
 
-			searchKeywordsInFiles(file, fh.Filename, request.Keywords, results)
+			if err := searchKeywordsInFiles(file, fh.Filename, request.Keywords, results); err != nil {
+				errChan <- err
+			}
 		}(fileHeader)
 	}
 
 	go func() {
 		wg.Wait()
 		close(results)
+		close(errChan)
 	}()
+
+	for err := range errChan {
+		return nil, err
+	}
 
 	for nr := range results {
 		matchedFiles = append(matchedFiles, nr)
@@ -51,7 +59,7 @@ func CreateZipFile(matchedFiles []models.FileReader) (string, error) {
 	zipFile, err := os.Create(zipFilePath)
 
 	if err != nil {
-		util.CustomLogger(constants.Error, fmt.Sprintf("Create %s : %v", zipFilePath, err))
+		fmt.Errorf("create zipFile: %v", err)
 		return "", err
 	}
 	defer zipFile.Close()
@@ -63,26 +71,26 @@ func CreateZipFile(matchedFiles []models.FileReader) (string, error) {
 		if seeker, ok := nr.Reader.(io.Seeker); ok {
 			_, err := seeker.Seek(0, io.SeekStart)
 			if err != nil {
-				util.CustomLogger(constants.Error, fmt.Sprintf("Seek: %v", err))
+				fmt.Errorf("seeker.Seek : %v", err)
 				return "", err
 			}
 		}
 
 		zipEntry, err := zipWriter.Create(nr.Filename)
 		if err != nil {
-			util.CustomLogger(constants.Error, fmt.Sprintf("Create zipWriter: %v", err))
+			fmt.Errorf("create zipWriter : %v", err)
 			return "", err
 		}
 
 		_, err = io.Copy(zipEntry, nr.Reader)
 		if err != nil {
-			util.CustomLogger(constants.Error, fmt.Sprintf("Copy: %v", err))
+			fmt.Errorf("copy : %v", err)
 			return "", err
 		}
 	}
 
 	if err := zipWriter.Close(); err != nil {
-		util.CustomLogger(constants.Error, fmt.Sprintf("Close: %v", err))
+		fmt.Errorf("close zipWriter : %v", err)
 		return "", err
 	}
 

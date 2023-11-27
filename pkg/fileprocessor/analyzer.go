@@ -18,7 +18,7 @@ func containsAllKeywords(line string, keywords []string) bool {
 	return len(keywordFound) == len(keywords)
 }
 
-func searchKeywordsInFiles(file multipart.File, filename string, keywords []string, results chan<- models.FileReader) {
+func searchKeywordsInFiles(file multipart.File, filename string, keywords []string, results chan<- models.FileReader) error {
 	scanner := bufio.NewScanner(file)
 	var contentBuilder strings.Builder
 
@@ -28,11 +28,12 @@ func searchKeywordsInFiles(file multipart.File, filename string, keywords []stri
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println("Erro ao ler o arquivo:", err)
-		return
+		fmt.Errorf("erro scanner: %v", err)
+		return err
 	}
 
 	if containsAllKeywords(contentBuilder.String(), keywords) {
 		results <- models.FileReader{Filename: filename, Reader: file}
 	}
+	return nil
 }

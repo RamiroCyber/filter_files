@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"read_files/models"
 	"read_files/pkg/filemenager"
 	"read_files/pkg/fileprocessor"
 	"read_files/util"
+	"read_files/util/constants"
 )
 
 func SendFiles(c *fiber.Ctx) error {
@@ -30,17 +32,20 @@ func SendFiles(c *fiber.Ctx) error {
 	matchedFiles, err := fileprocessor.ProcessorFile(request)
 
 	if err != nil {
+		util.CustomLogger(constants.Error, fmt.Sprintf("fileprocessor.ProcessorFile: %v", err))
+
 		return c.Status(fiber.StatusBadRequest).SendString("Erro ao processar arquivos")
 	}
 
 	zipFiles, err := fileprocessor.CreateZipFile(matchedFiles)
 	if err != nil {
+		util.CustomLogger(constants.Error, fmt.Sprintf("fileprocessor.CreateZipFile: %v", err))
 		return c.Status(fiber.StatusBadRequest).SendString("Erro ao criar arquivo zip")
 
 	}
 
 	defer filemenager.RemoveFiles(zipFiles)
 
-	return c.SendFile(zipFiles)
+	return c.SendFile(zipFiles, true)
 
 }
