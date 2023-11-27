@@ -5,8 +5,10 @@ const ZipFileName = "matched_files.zip"
 
 // Extensions
 const (
-	ExtensionTxt = ".txt"
-	ExtensionPdf = ".pdf"
+	ExtensionTxt  = ".txt"
+	ExtensionPdf  = ".pdf"
+	ExtensionDoc  = ".doc"
+	ExtensionDocx = ".docx"
 )
 
 // API

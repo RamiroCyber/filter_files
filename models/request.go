@@ -31,12 +31,20 @@ func (r *RequestForm) Validate() error {
 }
 
 func (r *RequestForm) ValidateExt() error {
+
+	allowedExtensions := map[string]bool{
+		constants.ExtensionTxt: true,
+		//constants.ExtensionPdf: true,
+		constants.ExtensionDoc:  true,
+		constants.ExtensionDocx: true,
+	}
+
 	for _, fileHeader := range r.Files {
 		filename := fileHeader.Filename
 		extension := strings.ToLower(filepath.Ext(filename))
 
-		if extension != constants.ExtensionTxt && extension != constants.ExtensionPdf {
-			return errors.New("extensão de arquivo não permitida: " + extension)
+		if !allowedExtensions[extension] {
+			return errors.New("extensão de arquivo não permitida: " + extension + " no arquivo " + filename)
 		}
 	}
 	return nil

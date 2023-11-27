@@ -19,17 +19,18 @@ func SendFiles(c *fiber.Ctx) error {
 		Keywords: util.SeparateWords(form.Value["keywords"]),
 	}
 
-	if err := request.Validate(); err != nil {
+	if err = request.Validate(); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	if err := request.ValidateExt(); err != nil {
+	if err = request.ValidateExt(); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
+
 	matchedFiles, err := fileprocessor.ProcessorFile(request)
+
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Erro ao processar arquivos")
-
 	}
 
 	zipFiles, err := fileprocessor.CreateZipFile(matchedFiles)
@@ -37,6 +38,7 @@ func SendFiles(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("Erro ao criar arquivo zip")
 
 	}
+
 	defer filemenager.RemoveFiles(zipFiles)
 
 	return c.SendFile(zipFiles)
