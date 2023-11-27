@@ -2,12 +2,10 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"path/filepath"
 	"read_files/models"
 	"read_files/pkg/filemenager"
 	"read_files/pkg/fileprocessor"
 	"read_files/util"
-	"read_files/util/constants"
 )
 
 func SendFiles(c *fiber.Ctx) error {
@@ -21,22 +19,13 @@ func SendFiles(c *fiber.Ctx) error {
 		Keywords: util.SeparateWords(form.Value["keywords"]),
 	}
 
-	if len(request.Files) == 0 {
-		return c.Status(fiber.StatusBadRequest).SendString("Envie os arquivos para analise")
-	}
-	if len(request.Keywords) == 0 {
-		return c.Status(fiber.StatusBadRequest).SendString("Envie as palavras chave")
+	if err := request.Validate(); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	for _, fileHeader := range request.Files {
-		filename := fileHeader.Filename
-		extension := filepath.Ext(filename)
-
-		if extension != constants.ExtensionTxt && extension != constants.ExtensionPdf {
-			return c.Status(fiber.StatusBadRequest).SendString("Extensão de arquivo não permitida")
-		}
+	if err := request.ValidateExt(); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-
 	matchedFiles, err := fileprocessor.ProcessorFile(request)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Erro ao processar arquivos")
