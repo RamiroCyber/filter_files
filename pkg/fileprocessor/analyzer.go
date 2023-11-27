@@ -28,7 +28,7 @@ func searchKeywordsInFiles(file multipart.File, filename string, keywords []stri
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Errorf("erro scanner: %v", err)
+		fmt.Errorf("error scanner: %v", err)
 		return err
 	}
 

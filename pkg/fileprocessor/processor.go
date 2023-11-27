@@ -26,7 +26,7 @@ func ProcessorFile(request models.RequestForm) ([]models.FileReader, error) {
 			defer wg.Done()
 			file, err := fh.Open()
 			if err != nil {
-				errChan <- fmt.Errorf("erro ao abrir o arquivo: %v", err)
+				errChan <- fmt.Errorf("error ao abrir o arquivo: %v", err)
 				return
 			}
 			defer file.Close()

@@ -33,8 +33,8 @@ func (r *RequestForm) Validate() error {
 func (r *RequestForm) ValidateExt() error {
 
 	allowedExtensions := map[string]bool{
-		constants.ExtensionTxt: true,
-		//constants.ExtensionPdf: true,
+		constants.ExtensionTxt:  true,
+		constants.ExtensionPdf:  true,
 		constants.ExtensionDoc:  true,
 		constants.ExtensionDocx: true,
 	}

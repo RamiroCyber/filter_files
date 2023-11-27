@@ -12,8 +12,9 @@ import (
 
 func SendFiles(c *fiber.Ctx) error {
 	form, err := c.MultipartForm()
+
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Erro ao processar formulário")
+		return c.Status(fiber.StatusBadRequest).SendString("Error ao processar formulário")
 	}
 
 	request := models.RequestForm{
@@ -33,14 +34,17 @@ func SendFiles(c *fiber.Ctx) error {
 
 	if err != nil {
 		util.CustomLogger(constants.Error, fmt.Sprintf("fileprocessor.ProcessorFile: %v", err))
+		return c.Status(fiber.StatusBadRequest).SendString("Error ao processar arquivos")
+	}
 
-		return c.Status(fiber.StatusBadRequest).SendString("Erro ao processar arquivos")
+	if matchedFiles == nil {
+		return c.Status(fiber.StatusNotFound).SendString("Palavras-chave não encontradas")
 	}
 
 	zipFiles, err := fileprocessor.CreateZipFile(matchedFiles)
 	if err != nil {
 		util.CustomLogger(constants.Error, fmt.Sprintf("fileprocessor.CreateZipFile: %v", err))
-		return c.Status(fiber.StatusBadRequest).SendString("Erro ao criar arquivo zip")
+		return c.Status(fiber.StatusBadRequest).SendString("Error ao criar arquivo zip")
 
 	}
 
