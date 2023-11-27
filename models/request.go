@@ -24,7 +24,7 @@ func (r *RequestForm) Validate() error {
 	}
 
 	if len(errMessages) > 0 {
-		return errors.New(strings.Join(errMessages, "; "))
+		return errors.New(strings.Join(errMessages, "; \n"))
 	}
 
 	return nil
