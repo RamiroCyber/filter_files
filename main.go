@@ -11,6 +11,10 @@ import (
 
 func init() {
 	config.LoadEnvironment()
+	//err := license.SetMeteredKey(os.Getenv(`UNIDOC_LICENSE_API_KEY`))
+	//if err != nil {
+	//	panic(err)
+	//}
 }
 
 func main() {

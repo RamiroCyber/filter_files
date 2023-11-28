@@ -1,4 +1,4 @@
-package fileprocessor
+package file_analyzer
 
 import (
 	"bufio"
@@ -8,9 +8,10 @@ import (
 	"strings"
 )
 
-func containsAllKeywords(line string, keywords []string) bool {
+func containsAllKeywordsTxt(line string, keywords []string) bool {
 	keywordFound := make(map[string]bool, len(keywords))
 	for _, keyword := range keywords {
+
 		if strings.Contains(line, strings.ToUpper(keyword)) {
 			keywordFound[keyword] = true
 		}
@@ -18,7 +19,7 @@ func containsAllKeywords(line string, keywords []string) bool {
 	return len(keywordFound) == len(keywords)
 }
 
-func searchKeywordsInFiles(file multipart.File, filename string, keywords []string, results chan<- models.FileReader) error {
+func SearchKeywordsInTextFiles(file multipart.File, filename string, keywords []string, results chan<- models.FileReader) error {
 	scanner := bufio.NewScanner(file)
 	var contentBuilder strings.Builder
 
@@ -32,7 +33,7 @@ func searchKeywordsInFiles(file multipart.File, filename string, keywords []stri
 		return err
 	}
 
-	if containsAllKeywords(contentBuilder.String(), keywords) {
+	if containsAllKeywordsTxt(contentBuilder.String(), keywords) {
 		results <- models.FileReader{Filename: filename, Reader: file}
 	}
 	return nil
