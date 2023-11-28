@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"read_files/models"
+	"read_files/pkg/filemanager"
 	"read_files/pkg/fileprocessor"
 	"read_files/util"
 	"read_files/util/constants"
@@ -40,7 +41,7 @@ func SendFiles(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("Palavras-chave não encontradas")
 	}
 
-	zipFiles, err := fileprocessor.CreateZipFile(matchedFiles)
+	zipFiles, err := filemanager.CreateZipFile(matchedFiles)
 	if err != nil {
 		util.CustomLogger(constants.Error, fmt.Sprintf("fileprocessor.CreateZipFile: %v", err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Error ao criar arquivo zip")
