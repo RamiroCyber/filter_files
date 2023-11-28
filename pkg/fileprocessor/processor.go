@@ -2,13 +2,11 @@ package fileprocessor
 
 import (
 	"archive/zip"
+	"bytes"
 	"fmt"
 	"io"
 	"mime/multipart"
-	"os"
 	"read_files/models"
-	"read_files/pkg/filemenager"
-	"read_files/util/constants"
 	"sync"
 )
 
@@ -53,46 +51,32 @@ func ProcessorFile(request models.RequestForm) ([]models.FileReader, error) {
 	return matchedFiles, nil
 }
 
-func CreateZipFile(matchedFiles []models.FileReader) (string, error) {
-	zipFilePath := filemenager.GenerateTempFilePath(constants.ZipFileName)
-	filemenager.CreateDirIfNotExist()
-	zipFile, err := os.Create(zipFilePath)
-
-	if err != nil {
-		fmt.Errorf("create zipFile: %v", err)
-		return "", err
-	}
-	defer zipFile.Close()
-
-	zipWriter := zip.NewWriter(zipFile)
-	defer zipWriter.Close()
+func CreateZipFile(matchedFiles []models.FileReader) (io.Reader, error) {
+	buf := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(buf)
 
 	for _, nr := range matchedFiles {
 		if seeker, ok := nr.Reader.(io.Seeker); ok {
 			_, err := seeker.Seek(0, io.SeekStart)
 			if err != nil {
-				fmt.Errorf("seeker.Seek : %v", err)
-				return "", err
+				return nil, err
 			}
 		}
 
 		zipEntry, err := zipWriter.Create(nr.Filename)
 		if err != nil {
-			fmt.Errorf("create zipWriter : %v", err)
-			return "", err
+			return nil, err
 		}
 
 		_, err = io.Copy(zipEntry, nr.Reader)
 		if err != nil {
-			fmt.Errorf("copy : %v", err)
-			return "", err
+			return nil, err
 		}
 	}
 
 	if err := zipWriter.Close(); err != nil {
-		fmt.Errorf("close zipWriter : %v", err)
-		return "", err
+		return nil, err
 	}
 
-	return zipFilePath, nil
+	return bytes.NewReader(buf.Bytes()), nil
 }
