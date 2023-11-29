@@ -18,10 +18,8 @@ func InitializeRoutes() *fiber.App {
 		return c.Next()
 	})
 
-	//HEALTHCHECK
 	v1.Get("/health", handler.HealthCheck)
 
-	//SENDFILES
 	v1.Post("/upload", handler.SendFiles)
 
 	return app
