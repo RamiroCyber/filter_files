@@ -12,17 +12,9 @@ import (
 func containsAllKeywordsPdf(line string, keywords []string) bool {
 	line = strings.ToUpper(line)
 
-	keywordFound := make(map[string]bool, len(keywords))
 	for _, keyword := range keywords {
 		upperKeyword := strings.ToUpper(keyword)
-
-		if strings.Contains(line, upperKeyword) {
-			keywordFound[keyword] = true
-		}
-	}
-
-	for _, found := range keywordFound {
-		if !found {
+		if !strings.Contains(line, upperKeyword) {
 			return false
 		}
 	}

@@ -1,63 +1,68 @@
 package fileprocessor
 
 import (
+	"fmt"
 	"mime/multipart"
 	"path/filepath"
 	"read_files/models"
+	"read_files/pkg/file_analyzer"
 	"read_files/util/constants"
 	"strings"
 	"sync"
 )
 
 func ProcessorFilesAll(request models.RequestForm) ([]models.FileReader, error) {
-	pdfChannel := make(chan *multipart.FileHeader, len(request.Files))
-	textChannel := make(chan *multipart.FileHeader, len(request.Files))
+	fileChannel := make(chan *multipart.FileHeader, len(request.Files))
 	results := make(chan models.FileReader, len(request.Files))
-	errChan := make(chan error, len(request.Files))
+	errChan := make(chan error, 1)
 
 	for _, fileHeader := range request.Files {
-		filename := fileHeader.Filename
-		extension := strings.ToLower(filepath.Ext(filename))
-
-		if extension == constants.ExtensionPdf {
-			pdfChannel <- fileHeader
-		} else {
-			textChannel <- fileHeader
-		}
+		fileChannel <- fileHeader
 	}
+	close(fileChannel)
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
-		processorFilesPdf(pdfChannel, request.Keywords, results, errChan)
+		openFilesForAnalysis(fileChannel, request.Keywords, results, errChan)
 	}()
 
-	go func() {
-		defer wg.Done()
-		processorFilesText(textChannel, request.Keywords, results, errChan)
-	}()
-
-	close(pdfChannel)
-	close(textChannel)
-
-	go func() {
-		wg.Wait()
-		close(results)
-		close(errChan)
-	}()
+	wg.Wait()
+	close(results)
 
 	var matchedFiles []models.FileReader
-	for {
-		select {
-		case file, ok := <-results:
-			if !ok {
-				return matchedFiles, nil
-			}
-			matchedFiles = append(matchedFiles, file)
-		case err := <-errChan:
-			return matchedFiles, err
+	for file := range results {
+		matchedFiles = append(matchedFiles, file)
+	}
+
+	if len(errChan) > 0 {
+		return matchedFiles, <-errChan
+	}
+	return matchedFiles, nil
+}
+
+func openFilesForAnalysis(fileChannel <-chan *multipart.FileHeader, keywords []string, results chan<- models.FileReader, errChan chan<- error) {
+	for fileHeader := range fileChannel {
+		file, err := fileHeader.Open()
+		if err != nil {
+			errChan <- fmt.Errorf("error opening file: %v", err)
+			return
+		}
+		defer file.Close()
+
+		extension := strings.ToLower(filepath.Ext(fileHeader.Filename))
+		var processErr error
+		if extension == constants.ExtensionPdf {
+			processErr = file_analyzer.SearchKeywordsInPdfFiles(file, fileHeader.Filename, keywords, results)
+		} else {
+			processErr = file_analyzer.SearchKeywordsInTextFiles(file, fileHeader.Filename, keywords, results)
+		}
+
+		if processErr != nil {
+			errChan <- fmt.Errorf("error processing file: %v", processErr)
+			return
 		}
 	}
 }
