@@ -7,6 +7,7 @@ import (
 	"read_files/models"
 	"read_files/pkg/file_analyzer"
 	"read_files/util/constants"
+	"runtime"
 	"strings"
 	"sync"
 )
@@ -22,12 +23,15 @@ func ProcessorFilesAll(request models.RequestForm) ([]models.FileReader, error) 
 	close(fileChannel)
 
 	var wg sync.WaitGroup
-	wg.Add(1)
 
-	go func() {
-		defer wg.Done()
-		openFilesForAnalysis(fileChannel, request.Keywords, results, errChan)
-	}()
+	numWorkers := runtime.NumCPU()
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			openFilesForAnalysis(fileChannel, request.Keywords, results, errChan)
+		}()
+	}
 
 	wg.Wait()
 	close(results)
@@ -50,7 +54,6 @@ func openFilesForAnalysis(fileChannel <-chan *multipart.FileHeader, keywords []s
 			errChan <- fmt.Errorf("error opening file: %v", err)
 			return
 		}
-		defer file.Close()
 
 		extension := strings.ToLower(filepath.Ext(fileHeader.Filename))
 		var processErr error
@@ -59,6 +62,8 @@ func openFilesForAnalysis(fileChannel <-chan *multipart.FileHeader, keywords []s
 		} else {
 			processErr = file_analyzer.SearchKeywordsInTextFiles(file, fileHeader.Filename, keywords, results)
 		}
+
+		file.Close()
 
 		if processErr != nil {
 			errChan <- fmt.Errorf("error processing file: %v", processErr)
