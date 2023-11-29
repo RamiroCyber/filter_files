@@ -11,7 +11,7 @@ import (
 
 func init() {
 	config.LoadEnvironment()
-	//err := license.SetMeteredKey(os.Getenv(`UNIDOC_LICENSE_API_KEY`))
+	//err := license.SetMeteredKey(os.Getenv(`UNIDOC_LICENSE_API_KEY`)) //retirar comentario caso tenha uma key do UNIDOC
 	//if err != nil {
 	//	panic(err)
 	//}

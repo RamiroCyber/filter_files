@@ -1,6 +1,5 @@
 package constants
 
-const TempDirPath = "temp"
 const FileName = "matched_files.zip"
 
 // Extensions
