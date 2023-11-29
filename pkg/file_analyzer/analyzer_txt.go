@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"mime/multipart"
-	"read_files/models"
+	"read_files/structs"
 	"strings"
 )
 
@@ -19,7 +19,7 @@ func containsAllKeywordsTxt(line string, keywords []string) bool {
 	return len(keywordFound) == len(keywords)
 }
 
-func SearchKeywordsInTextFiles(file multipart.File, filename string, keywords []string, results chan<- models.FileReader) error {
+func SearchKeywordsInTextFiles(file multipart.File, filename string, keywords []string, results chan<- structs.FileReader) error {
 	scanner := bufio.NewScanner(file)
 	var contentBuilder strings.Builder
 
@@ -34,7 +34,7 @@ func SearchKeywordsInTextFiles(file multipart.File, filename string, keywords []
 	}
 
 	if containsAllKeywordsTxt(contentBuilder.String(), keywords) {
-		results <- models.FileReader{Filename: filename, Reader: file}
+		results <- structs.FileReader{Filename: filename, Reader: file}
 	}
 	return nil
 }

@@ -5,7 +5,7 @@ import (
 	"github.com/unidoc/unipdf/v3/extractor"
 	"github.com/unidoc/unipdf/v3/model"
 	"mime/multipart"
-	"read_files/models"
+	"read_files/structs"
 	"strings"
 )
 
@@ -22,7 +22,7 @@ func containsAllKeywordsPdf(line string, keywords []string) bool {
 	return true
 }
 
-func SearchKeywordsInPdfFiles(file multipart.File, filename string, keywords []string, results chan<- models.FileReader) error {
+func SearchKeywordsInPdfFiles(file multipart.File, filename string, keywords []string, results chan<- structs.FileReader) error {
 	pdfReader, err := model.NewPdfReader(file)
 	if err != nil {
 		return fmt.Errorf("NewPdfReader: %v", err)
@@ -53,7 +53,7 @@ func SearchKeywordsInPdfFiles(file multipart.File, filename string, keywords []s
 
 		if containsAllKeywordsPdf(text, keywords) {
 			found = true
-			results <- models.FileReader{Filename: filename, Reader: file}
+			results <- structs.FileReader{Filename: filename, Reader: file}
 		}
 	}
 	return nil

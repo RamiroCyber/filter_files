@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
-	"read_files/models"
 	"read_files/pkg/file_analyzer"
+	"read_files/structs"
 	"read_files/util/constants"
 	"runtime"
 	"strings"
 	"sync"
 )
 
-func ProcessorFilesAll(request models.RequestForm) ([]models.FileReader, error) {
+func ProcessorFilesAll(request structs.RequestForm) ([]structs.FileReader, error) {
 	fileChannel := make(chan *multipart.FileHeader, len(request.Files))
-	results := make(chan models.FileReader, len(request.Files))
+	results := make(chan structs.FileReader, len(request.Files))
 	errChan := make(chan error, 1)
 
 	for _, fileHeader := range request.Files {
@@ -36,7 +36,7 @@ func ProcessorFilesAll(request models.RequestForm) ([]models.FileReader, error) 
 	wg.Wait()
 	close(results)
 
-	var matchedFiles []models.FileReader
+	var matchedFiles []structs.FileReader
 	for file := range results {
 		matchedFiles = append(matchedFiles, file)
 	}
@@ -47,7 +47,7 @@ func ProcessorFilesAll(request models.RequestForm) ([]models.FileReader, error) 
 	return matchedFiles, nil
 }
 
-func openFilesForAnalysis(fileChannel <-chan *multipart.FileHeader, keywords []string, results chan<- models.FileReader, errChan chan<- error) {
+func openFilesForAnalysis(fileChannel <-chan *multipart.FileHeader, keywords []string, results chan<- structs.FileReader, errChan chan<- error) {
 	for fileHeader := range fileChannel {
 		file, err := fileHeader.Open()
 		if err != nil {

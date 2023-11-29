@@ -4,10 +4,10 @@ import (
 	"archive/zip"
 	"bytes"
 	"io"
-	"read_files/models"
+	"read_files/structs"
 )
 
-func CreateZipFile(matchedFiles []models.FileReader) (io.Reader, error) {
+func CreateZipFile(matchedFiles []structs.FileReader) (io.Reader, error) {
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
 

@@ -3,9 +3,9 @@ package handler
 import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"read_files/models"
 	"read_files/pkg/filemanager"
 	"read_files/pkg/fileprocessor"
+	"read_files/structs"
 	"read_files/util"
 	"read_files/util/constants"
 )
@@ -17,7 +17,7 @@ func SendFiles(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("Error ao processar formulário")
 	}
 
-	request := models.RequestForm{
+	request := structs.RequestForm{
 		Files:    form.File["documents"],
 		Keywords: util.SeparateWords(form.Value["keywords"]),
 	}
