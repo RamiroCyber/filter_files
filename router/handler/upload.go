@@ -3,14 +3,14 @@ package handler
 import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"read_files/pkg/filemanager"
-	"read_files/pkg/fileprocessor"
+	"read_files/pkg/file_manager"
+	"read_files/pkg/file_processor"
 	"read_files/structs"
 	"read_files/util"
 	"read_files/util/constants"
 )
 
-func SendFiles(c *fiber.Ctx) error {
+func Upload(c *fiber.Ctx) error {
 	form, err := c.MultipartForm()
 
 	if err != nil {
@@ -30,10 +30,10 @@ func SendFiles(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	matchedFiles, err := fileprocessor.ProcessorFilesAll(request)
+	matchedFiles, err := file_processor.ProcessorFilesAll(request)
 
 	if err != nil {
-		util.CustomLogger(constants.Error, fmt.Sprintf("fileprocessor.ProcessorFile: %v", err))
+		util.CustomLogger(constants.Error, fmt.Sprintf("file_processor.ProcessorFile: %v", err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Error ao processar arquivos")
 	}
 
@@ -41,9 +41,9 @@ func SendFiles(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("Palavras-chave não encontradas")
 	}
 
-	zipFiles, err := filemanager.CreateZipFile(matchedFiles)
+	zipFiles, err := file_manager.CreateZipFile(matchedFiles)
 	if err != nil {
-		util.CustomLogger(constants.Error, fmt.Sprintf("fileprocessor.CreateZipFile: %v", err))
+		util.CustomLogger(constants.Error, fmt.Sprintf("file_processor.CreateZipFile: %v", err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Error ao criar arquivo zip")
 
 	}

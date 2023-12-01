@@ -1,4 +1,4 @@
-package fileprocessor
+package file_processor
 
 import (
 	"fmt"

@@ -20,7 +20,7 @@ func InitializeRoutes() *fiber.App {
 
 	v1.Get("/health", handler.HealthCheck)
 
-	v1.Post("/upload", handler.SendFiles)
+	v1.Post("/upload", handler.Upload)
 
 	return app
 }
