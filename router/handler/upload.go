@@ -1,13 +1,11 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"read_files/pkg/file_manager"
 	"read_files/pkg/file_processor"
 	"read_files/structs"
 	"read_files/util"
-	"read_files/util/constants"
 )
 
 func Upload(c *fiber.Ctx) error {
@@ -33,7 +31,6 @@ func Upload(c *fiber.Ctx) error {
 	matchedFiles, err := file_processor.ProcessorFilesAll(request)
 
 	if err != nil {
-		util.CustomLogger(constants.Error, fmt.Sprintf("file_processor.ProcessorFile: %v", err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Error ao processar arquivos")
 	}
 
@@ -43,9 +40,9 @@ func Upload(c *fiber.Ctx) error {
 
 	zipFiles, err := file_manager.CreateZipFile(matchedFiles)
 	if err != nil {
-		util.CustomLogger(constants.Error, fmt.Sprintf("file_processor.CreateZipFile: %v", err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Error ao criar arquivo zip")
 
 	}
+
 	return c.Status(fiber.StatusOK).SendStream(zipFiles)
 }

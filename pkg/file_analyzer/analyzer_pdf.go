@@ -6,6 +6,8 @@ import (
 	"github.com/unidoc/unipdf/v3/model"
 	"mime/multipart"
 	"read_files/structs"
+	"read_files/util"
+	"read_files/util/constants"
 	"strings"
 )
 
@@ -25,11 +27,13 @@ func containsAllKeywordsPdf(line string, keywords []string) bool {
 func SearchKeywordsInPdfFiles(file multipart.File, filename string, keywords []string, results chan<- structs.FileReader) error {
 	pdfReader, err := model.NewPdfReader(file)
 	if err != nil {
+		util.CustomLogger(constants.Error, fmt.Sprintf("NewPdfReader: %v", err))
 		return fmt.Errorf("NewPdfReader: %v", err)
 	}
 
 	numPages, err := pdfReader.GetNumPages()
 	if err != nil {
+		util.CustomLogger(constants.Error, fmt.Sprintf("GetNumPages: %v", err))
 		return fmt.Errorf("GetNumPages: %v", err)
 	}
 
@@ -37,17 +41,19 @@ func SearchKeywordsInPdfFiles(file multipart.File, filename string, keywords []s
 	for i := 1; i <= numPages && !found; i++ {
 		page, err := pdfReader.GetPage(i)
 		if err != nil {
-			return fmt.Errorf("error scanner: %v", err)
+			util.CustomLogger(constants.Error, fmt.Sprintf("GetPage: %v", err))
+			return fmt.Errorf("GetPage: %v", err)
 		}
 
 		ex, err := extractor.New(page)
 		if err != nil {
-			return fmt.Errorf("extractor.New: %v", err)
+			util.CustomLogger(constants.Error, fmt.Sprintf("extractor.New: %v", err))
+			return fmt.Errorf("Extractor.New: %v", err)
 		}
 
 		text, err := ex.ExtractText()
 		if err != nil {
-			fmt.Printf(text)
+			util.CustomLogger(constants.Error, fmt.Sprintf("ExtractText: %v", err))
 			return fmt.Errorf("ex.ExtractText: %v", err)
 		}
 

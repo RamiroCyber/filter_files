@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"read_files/pkg/file_analyzer"
 	"read_files/structs"
+	"read_files/util"
 	"read_files/util/constants"
-	"runtime"
 	"strings"
 	"sync"
 )
@@ -24,7 +24,7 @@ func ProcessorFilesAll(request structs.RequestForm) ([]structs.FileReader, error
 
 	var wg sync.WaitGroup
 
-	numWorkers := runtime.NumCPU()
+	numWorkers := 4
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 		go func() {
@@ -51,6 +51,7 @@ func openFilesForAnalysis(fileChannel <-chan *multipart.FileHeader, keywords []s
 	for fileHeader := range fileChannel {
 		file, err := fileHeader.Open()
 		if err != nil {
+			util.CustomLogger(constants.Error, fmt.Sprintf("error opening file: %v", err))
 			errChan <- fmt.Errorf("error opening file: %v", err)
 			return
 		}
@@ -66,6 +67,7 @@ func openFilesForAnalysis(fileChannel <-chan *multipart.FileHeader, keywords []s
 		file.Close()
 
 		if processErr != nil {
+			util.CustomLogger(constants.Error, fmt.Sprintf("error processing file: %v", err))
 			errChan <- fmt.Errorf("error processing file: %v", processErr)
 			return
 		}
